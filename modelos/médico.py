@@ -1,6 +1,7 @@
 from .especialidad import Especialidad
 
 class Medico:
+    
     def __init__(self, nombre, matricula):
         if not nombre or not nombre.strip():
             raise ValueError("El nombre del medico no debe estar vacio")
