@@ -2,18 +2,17 @@ import sys
 import os
 import unittest
 from datetime import datetime
-
 # Add project root to Python path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(project_root)
 
 import unittest
 from datetime import datetime
-from modelos.clase_paciente import Paciente
-from modelos.médico import Medico
-from modelos.especialidad import Especialidad
-from modelos.clinica import Clinica
-from modelos.excepciones import (
+from src.modelos.clase_paciente import Paciente
+from src.modelos.médico import Medico
+from src.modelos.especialidad import Especialidad
+from src.modelos.clinica import Clinica
+from src.modelos.excepciones import (
     PacienteNoEncontradoException,
     MedicoNoEncontradoException,
     MedicoNoDisponibleException,

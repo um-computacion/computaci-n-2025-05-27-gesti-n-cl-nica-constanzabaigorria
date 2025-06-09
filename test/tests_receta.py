@@ -2,16 +2,15 @@ import sys
 import os
 import unittest
 from datetime import datetime
-
 # Add project root to Python path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(project_root)
 
 import unittest
 from datetime import date
-from modelos.receta import Receta
-from modelos.clase_paciente import Paciente
-from modelos.médico import Medico
+from src.modelos.receta import Receta
+from src.modelos.clase_paciente import Paciente
+from src.modelos.médico import Medico
 
 class TestReceta(unittest.TestCase):
     def setUp(self):
