@@ -1,17 +1,26 @@
-from datetime import date
-from .clase_paciente import Paciente
-from .médico import Medico
+from datetime import datetime
 
 class Receta:
-    def __init__(self, paciente, medico, medicamentos, fecha=None):
-        self.paciente = paciente  # clase Paciente
-        self.medico = medico      # clase Médico
-        self.medicamentos = medicamentos  # lista de medicamentos
-        self.fecha = fecha if fecha else date.today()
+    def __init__(self, paciente, medico, medicamentos):
+        if paciente is None:
+            raise ValueError("El paciente no puede estar vacío.")
+        if medico is None:
+            raise ValueError("El médico no puede estar vacío.")
+        if not medicamentos or not isinstance(medicamentos, list) or len(medicamentos) == 0:
+            raise ValueError("Debe indicar al menos un medicamento.")
+        self.__paciente__ = paciente
+        self.__medico__ = medico
+        self.__medicamentos__ = medicamentos
+        self._fecha = datetime.now()
 
-    def agregar_medicamento(self, medicamento):
-        self.medicamentos.append(medicamento)
+    def obtener_fecha(self):
+        return self._fecha
 
     def __str__(self):
-        meds = ', '.join(self.medicamentos)
-        return f"Receta para {self.paciente}, emitida por {self.medico} el {self.fecha}: {meds}"
+        meds = ", ".join(self.__medicamentos__)
+        return (
+            f"Receta: Paciente: {self.__paciente__} | "
+            f"Médico: {self.__medico__} | "
+            f"Medicamentos: {meds} | "
+            f"Fecha: {self._fecha.strftime('%d/%m/%Y %H:%M')}"
+        )

@@ -1,3 +1,12 @@
+import sys
+import os
+import unittest
+from datetime import datetime
+
+# Add project root to Python path
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(project_root)
+
 import unittest
 from datetime import date
 from modelos.receta import Receta
@@ -5,31 +14,36 @@ from modelos.clase_paciente import Paciente
 from modelos.médico import Medico
 
 class TestReceta(unittest.TestCase):
-
     def setUp(self):
-        self.paciente = Paciente("Maria López", "12345678")
-        self.medico = Medico("Dr. Juan Pérez", "MP1234")
-        self.receta = Receta(
-            paciente=self.paciente,
-            medico=self.medico,
-            medicamentos=["Paracetamol"]
-        )
+        self.paciente = Paciente("Juan Perez", "12345678", "01/01/1990")
+        self.medico = Medico("Dra. House", "M123")
 
-    def test_datos_iniciales(self):
-        self.assertEqual(str(self.receta.paciente), "Maria López")
-        self.assertEqual(str(self.receta.medico), "Dr. Juan Pérez")
-        self.assertIn("Paracetamol", self.receta.medicamentos)
-        self.assertEqual(self.receta.fecha, date.today())
-
-    def test_agregar_medicamento(self):
-        self.receta.agregar_medicamento("Ibuprofeno")
-        self.assertIn("Ibuprofeno", self.receta.medicamentos)
+    def test_creacion_exitosa(self):
+        receta = Receta(self.paciente, self.medico, ["Paracetamol", "Ibuprofeno"])
+        self.assertIn("Paracetamol", str(receta))
+        self.assertIn("Ibuprofeno", str(receta))
+        self.assertIn("Juan Perez", str(receta))
+        self.assertIn("Dra. House", str(receta))
+        self.assertIsInstance(receta.obtener_fecha(), datetime)
 
     def test_str(self):
-        resultado = str(self.receta)
-        self.assertIn("Maria López", resultado)
-        self.assertIn("Dr. Juan Pérez", resultado)
-        self.assertIn("Paracetamol", resultado)
+        receta = Receta(self.paciente, self.medico, ["Amoxicilina"])
+        s = str(receta)
+        self.assertIn("Amoxicilina", s)
+        self.assertIn("Juan Perez", s)
+        self.assertIn("Dra. House", s)
 
-if __name__ == '__main__':
+    def test_datos_invalidos(self):
+        with self.assertRaises(TypeError):
+            Receta()  # Sin argumentos
+        with self.assertRaises(ValueError):
+            Receta(None, self.medico, ["Paracetamol"])
+        with self.assertRaises(ValueError):
+            Receta(self.paciente, None, ["Paracetamol"])
+        with self.assertRaises(ValueError):
+            Receta(self.paciente, self.medico, [])
+        with self.assertRaises(ValueError):
+            Receta(self.paciente, self.medico, None)
+
+if __name__ == "__main__":
     unittest.main()
