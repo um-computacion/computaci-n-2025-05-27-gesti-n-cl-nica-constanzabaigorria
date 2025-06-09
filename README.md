@@ -4,9 +4,9 @@
 ## 👤 Información del Alumno
 
 ### 📋 Datos Personales
-- **Nombre y Apellido**: Constanza Baigorria.
+- **Nombre y Apellido**: Constanza Baigorria
 - **Ciclo Lectivo**: 2025
-- **Carrera**: Ingeniería en Informática.
+- **Carrera**: Ingeniería en Informática
 
 ## ⏰ Información Importante sobre la Entrega
 
