@@ -336,5 +336,12 @@ class CLI:
         except ValueError:
             raise ValueError("Formato de fecha u hora invalido. (dd/mm/aaaa)")
 
-    
+if __name__ == "__main__":
+    try:
+        cli = CLI()
+        cli.ejecutar()
+    except KeyboardInterrupt:
+        print("\nSistema terminado por usuario")
+    except Exception as e:
+        print(f"\nError en el sistema: {e}")
 
