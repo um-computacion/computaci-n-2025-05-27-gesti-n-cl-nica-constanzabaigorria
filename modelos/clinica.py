@@ -1,74 +1,144 @@
 from datetime import datetime
-from .médico import Medico
 from .clase_paciente import Paciente
-from .turno import Turno
-from .historia_clinica import HistoriaClinica
+from .médico import Medico
 from .especialidad import Especialidad
+from .turno import Turno
 from .receta import Receta
+from .historia_clinica import HistoriaClinica
+from .excepciones import (
+    PacienteNoEncontradoException,
+    MedicoNoEncontradoException,
+    MedicoNoDisponibleException,
+    TurnoOcupadoException,
+    RecetaInvalidaException
+)
 
 class Clinica:
-    def __init__(self, nombre):
-        if not isinstance(nombre, str) or not nombre.strip():
-            raise ValueError("El nombre de la clínica no puede estar vacío")
-        
-        self.nombre = nombre.strip()
-        self.medicos = []
-        self.pacientes = []
-        self.turnos = []
-        self.historias_clinicas = {}  # dni_paciente: historia_clinica
-        
-    def agregar_medico(self, medico):
-        if not isinstance(medico, Medico):
-            raise TypeError("El parámetro debe ser una instancia de Medico")
-        if medico in self.medicos:
-            raise ValueError("El médico ya está registrado")
-        self.medicos.append(medico)
-        
+    def __init__(self):
+        self.__pacientes = {}
+        self.__medicos = {}
+        self.__turnos = []
+        self.__historias_clinicas = {}
+
+    # Pacientes
+
     def agregar_paciente(self, paciente):
         if not isinstance(paciente, Paciente):
-            raise TypeError("El parámetro debe ser una instancia de Paciente")
-        if paciente in self.pacientes:
-            raise ValueError("El paciente ya está registrado")
-        self.pacientes.append(paciente)
-        self.historias_clinicas[paciente.dni] = HistoriaClinica(paciente)
+            raise ValueError("Debe proporcionar un objeto Paciente valido")
         
-    def programar_turno(self, paciente, medico, fecha):
-        if not isinstance(paciente, Paciente) or paciente not in self.pacientes:
-            raise ValueError("Paciente no registrado")
-        if not isinstance(medico, Medico) or medico not in self.medicos:
-            raise ValueError("Médico no registrado")
-        if not isinstance(fecha, datetime):
-            raise TypeError("La fecha debe ser una instancia de datetime")
-            
-        # Verificar disponibilidad
-        for turno in self.turnos:
-            if (turno.medico == medico and 
-                turno.fecha.date() == fecha.date() and 
-                turno.estado == "Programado"):
-                raise ValueError("El médico ya tiene un turno en ese horario")
+        dni = paciente.obtener_dni()
+
+        if dni in self.__pacientes:
+            raise ValueError(f"Ya existe un paciente con DNI: {dni}")
         
-        turno = Turno(paciente, medico, fecha)
-        self.turnos.append(turno)
-        return turno
+        self.__pacientes[dni] = paciente
+        self.__historias_clinicas[dni] = HistoriaClinica(paciente)
+
+    def obtener_pacientes(self):
+        return list(self.__pacientes.values())
+    
+    def validar_existencia_paciente(self, dni):
+        if dni not in self.__pacientes:
+            raise PacienteNoEncontradoException(f"No se encontro el paciente con DNI: {dni}")
         
-    def buscar_turnos_medico(self, medico, fecha=None):
+    # Medicos
+
+    def agregar_medico(self, medico):
         if not isinstance(medico, Medico):
-            raise TypeError("El parámetro debe ser una instancia de Medico")
-            
-        turnos = [t for t in self.turnos if t.medico == medico]
-        if fecha:
-            if not isinstance(fecha, datetime):
-                raise TypeError("La fecha debe ser una instancia de datetime")
-            turnos = [t for t in turnos if t.fecha.date() == fecha.date()]
-        return sorted(turnos, key=lambda x: x.fecha)
+            raise ValueError("Debe proporcionar un objeto medico valido")
+        
+        matricula = medico.obtener_matricula()
+
+        if matricula in self.__medicos:
+            raise ValueError(f"Ya existe el medico con matricula: {matricula}")
+        
+        self.__medicos[matricula] = medico
+
+    def obtener_medicos(self):
+        return list(self.__medicos.values())
     
-    def obtener_historia_clinica(self, paciente):
-        if not isinstance(paciente, Paciente):
-            raise TypeError("El parámetro debe ser una instancia de Paciente")
-        return self.historias_clinicas.get(paciente.dni)
+    def obtener_medico_por_matricula(self, matricula):
+        if matricula not in self.__medicos:
+            raise MedicoNoEncontradoException(f"No se encontro medico con matricula: {matricula}")
+        
+        return self.__medicos[matricula]
     
-    def __str__(self):
-        return (f"Clínica {self.nombre}\n"
-                f"Médicos registrados: {len(self.medicos)}\n"
-                f"Pacientes registrados: {len(self.pacientes)}\n"
-                f"Turnos programados: {len([t for t in self.turnos if t.estado == 'Programado'])}")
+    def validar_existencia_medico(self, matricula):
+        if matricula not in self.__medicos:
+            raise MedicoNoEncontradoException(f"No se encontro medico con matricula: {matricula}")
+        
+    # Turnos
+
+    def agendar_turno(self, dni, matricula, especialidad, fecha_hora):
+        self.validar_existencia_paciente(dni)
+        paciente = self.__pacientes[dni]
+
+        self.validar_existencia_medico(matricula)
+        medico = self.__medicos[matricula]
+
+        self.validar_fecha_no_pasada(fecha_hora)
+
+        dia_semana = self.obtener_dia_semana_español(fecha_hora)
+        
+        self.validar_especialidad_en_dia(medico, especialidad, dia_semana)
+
+        self.validar_turno_no_duplicado(matricula, fecha_hora)
+
+        turno = Turno(paciente, medico, fecha_hora, especialidad)
+        self.__turnos.append(turno)
+
+        self.__historias_clinicas[dni].agregar_turno(turno)
+
+    def obtener_turnos(self):
+        return self.__turnos.copy()
+    
+    def validar_turno_no_duplicado(self, matricula, fecha_hora):
+        for turno in self.__turnos:
+            if (turno.obtener_medico().obtener_matricula() == matricula and
+                 turno.obtener_fecha_hora() == fecha_hora):
+                raise TurnoOcupadoException(f"El medico ya tiene un turno agendado en {fecha_hora}")
+
+    def obtener_dia_semana_español(self, fecha_hora):
+        dias = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
+        return dias[fecha_hora.weekday()]
+    
+    def validar_fecha_no_pasada(self, fecha_hora):
+        if fecha_hora < datetime.now():
+            fecha_str = fecha_hora.strftime("%d/%m/%Y %H:%M")
+            raise ValueError(f"No se puede agendar un turno en el pasado: {fecha_str}")
+
+    def validar_especialidad_en_dia(self, medico, especialidad_solicitada, dia_semana):
+        especialidad_disponible = medico.obtener_especialidad_para_dia(dia_semana)
+        
+        if especialidad_disponible is None:
+            raise MedicoNoDisponibleException(
+                f"El medico no atiende los {dia_semana}"
+            )
+        
+        if especialidad_disponible.lower() != especialidad_solicitada.lower():
+            raise MedicoNoDisponibleException(
+                f"El medico no atiende {especialidad_solicitada} los dias {dia_semana}\n"
+                f"Atiende: {especialidad_disponible}"
+            )
+        
+    # Recetas
+    
+    def emitir_receta(self, dni, matricula, medicamentos):
+        self.validar_existencia_paciente(dni)
+        paciente = self.__pacientes[dni]
+
+        self.validar_existencia_medico(matricula)
+        medico = self.__medicos[matricula]
+
+        if not medicamentos:
+            raise RecetaInvalidaException("Debe haber al menos un medicamento")
+        
+        receta = Receta(paciente, medico, medicamentos)
+        
+        self.__historias_clinicas[dni].agregar_receta(receta)
+
+    # Historias Clinicas
+    
+    def obtener_historia_clinica(self, dni):
+        self.validar_existencia_paciente(dni)
+        return self.__historias_clinicas[dni]

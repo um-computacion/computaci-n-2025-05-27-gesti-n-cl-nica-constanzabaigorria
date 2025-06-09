@@ -1,3 +1,10 @@
+import sys
+import os
+from datetime import datetime
+# Aseguramos que el directorio del proyecto esté en el path para importar los módulos correctamente
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(project_root)
+
 from datetime import datetime 
 from modelos.clinica import Clinica
 from modelos.clase_paciente import Paciente
@@ -8,84 +15,93 @@ from modelos.excepciones import (
     MedicoNoEncontradoException,
     MedicoNoDisponibleException,
     TurnoOcupadoException,
-    RecetaInvalidaException,
-    HistoriaClinicaNoEncontradaException
+    RecetaInvalidaException
 )
 
 class CLI:
     def __init__(self):
-        self.clinica = Clinica("Clínica San Martín")
+        self.clinica = Clinica()
 
     def menu(self):
-        print("\nSistema de gestión de clínica")
+        print("\nSistema de gestion de clinica")
         print("-" * 50)
         print("1 - Agregar paciente")
-        print("2 - Agregar médico")
-        print("3 - Programar turno")
-        print("4 - Ver turnos de médico")
-        print("5 - Ver historia clínica")
-        print("6 - Ver todos los pacientes")
-        print("7 - Ver todos los médicos")
+        print("2 - Agregar medico")
+        print("3 - Agendar turno")
+        print("4 - Agregar especialidad a medico")
+        print("5 - Emitir receta")
+        print("6 - Ver historia clinica")
+        print("7 - Ver todos los turnos")
+        print("8 - Ver todos los pacientes")
+        print("9 - Ver todos los medicos")
         print("0 - Salir")
 
     def ejecutar(self):
         while True:
             self.menu()
+
             try:
-                opcion = input("\nSeleccione una opción: ").strip()
-                
+                opcion = input("Selecciona una opcion: ").strip()
+
                 if opcion == "0":
-                    print("\nHasta luego!")
+                    print("\nBye bye")
                     break
                 elif opcion == "1":
                     self.agregar_paciente()
                 elif opcion == "2":
                     self.agregar_medico()
                 elif opcion == "3":
-                    self.programar_turno()
+                    self.agendar_turno()
                 elif opcion == "4":
-                    self.ver_turnos_medico()
+                    self.agregar_especialidad_a_medico()
                 elif opcion == "5":
-                    self.ver_historia_clinica()
+                    self.emitir_receta()
                 elif opcion == "6":
-                    self.ver_todos_los_pacientes()
+                    self.ver_historia_clinica()
                 elif opcion == "7":
+                    self.ver_todos_los_turnos()
+                elif opcion == "8":
+                    self.ver_todos_los_pacientes()
+                elif opcion == "9":
                     self.ver_todos_los_medicos()
                 else:
-                    print("Opción inválida")
+                    print("Opcion invalida. Seleccione de vuelta")
             except KeyboardInterrupt:
-                print("\nPrograma terminado")
+                print("Hasta luego")
                 break
             except Exception as e:
-                print(f"Error: {e}")
+                print(f"Error inesperado: {e}")
+                input("\nEnter para continuar")
 
     def agregar_paciente(self):
-        print("\nAgregar Paciente")
+        print("\nAgregar paciente")
         print("-" * 50)
+
         try:
             nombre = input("Nombre completo: ").strip()
-            dni = input("DNI: ").strip()
-            
-            paciente = Paciente(nombre, dni)
+            dni = input("DNI: " ).strip()
+            fecha_nacimiento = input("Fecha de nacimiento (dd/mm/aaaa): ").strip()
+
+            paciente = Paciente(nombre, dni, fecha_nacimiento)
             self.clinica.agregar_paciente(paciente)
 
-            print(f"\nPaciente agregado: {paciente}")
+            print("Paciente agregado")
             print(f"{paciente}")
-
         except ValueError as e:
             print(f"Error en los datos: {e}")
         except Exception as e:
             print(f"Error inesperado: {e}")
         
-        input("\nPresione Enter para continuar...")
+        input("\nEnter para continuar")
 
     def agregar_medico(self):
-        print("\nAgregar Médico")
+        print("\nAgregar medico")
         print("-" * 50)
+
         try:
-            nombre = input("Nombre completo de médico: ").strip()
-            matricula = input("Matrícula: ").strip()
-            
+            nombre = input("Nombre completo del medico: ").strip()
+            matricula = input("Matricula: ").strip()
+
             medico = Medico(nombre, matricula)
 
             print("\nAgregue especialidades (Enter sin escribir nada para terminar): ")
@@ -109,7 +125,8 @@ class CLI:
                     continue
 
             self.clinica.agregar_medico(medico)
-            print(f"\nMédico agregado: {medico}")
+
+            print("Medico agregado")
             print(f"{medico}")
         
         except ValueError as e:
@@ -117,8 +134,8 @@ class CLI:
         except Exception as e:
             print(f"Error inesperado: {e}")
 
-        input("\nPresione Enter para continuar...")
-
+        input("\nEnter para continuar")
+    
     def solicitar_dias_atencion(self):
         print("Dias disponibles: lunes, martes, miercoles, jueves, viernes, sabado, domingo")
         dias_input = input("Dias de atencion: (separados por comas): ").strip()
@@ -129,51 +146,36 @@ class CLI:
         dias = [dia.strip() for dia in dias_input.split(",") if dia.strip()]
         return dias
     
-    def programar_turno(self):
-        print("\nProgramar Turno")
+    def agendar_turno(self):
+        print("\nAgendar turno")
         print("-" * 50)
-        try:
-            # Mostrar pacientes y médicos disponibles
-            print("\nPacientes registrados:")
-            for p in self.clinica.pacientes:
-                print(f"- {p}")
-            
-            print("\nMédicos registrados:")
-            for m in self.clinica.medicos:
-                print(f"- {m}")
-            
-            # Solicitar datos
-            dni = input("\nDNI del paciente: ").strip()
-            matricula = input("Matrícula del médico: ").strip()
-            especialidad = input("Especialidad del médico: ").strip()
 
-            fecha = self.solicitar_fecha()
-            
-            # Buscar paciente y médico
-            paciente = next((p for p in self.clinica.pacientes if p.dni == dni), None)
-            medico = next((m for m in self.clinica.medicos if m.matricula == matricula), None)
-            
-            if not paciente:
-                raise PacienteNoEncontradoException(dni)
-            if not medico:
-                raise MedicoNoEncontradoException(matricula)
-            
-            turno = self.clinica.programar_turno(paciente, medico, fecha, especialidad)
-            print(f"\nTurno programado: {turno}")
-            
+        try:
+            dni = input("DNI: ").strip()
+            matricula = input("Matricula medico: ").strip()
+            especialidad = input("Especialidad solicitada: ").strip()
+
+            fecha_str = input("Fecha del turno (dd/mm/aaaa): ").strip()
+            hora_str = input("Hora del turno (HH:MM): ").strip()
+
+            fecha_hora = self.parse_fecha_hora(fecha_str, hora_str)
+
+            self.clinica.agendar_turno(dni, matricula, especialidad, fecha_hora)
+
+            print("Turno agendado")
+            print(f"Paciente DNI: {dni}")
+            print(f"Medico: {matricula}")
+            print(f"Fecha: {fecha_hora.strftime('%d/%m/%Y %H:%M')}")
+        
         except (PacienteNoEncontradoException, MedicoNoEncontradoException,
                 MedicoNoDisponibleException, TurnoOcupadoException) as e:
-            print(f"Error: {e}")
-        
-        input("\nPresione Enter para continuar...")
+            print(f"{e}")
+        except ValueError as e:
+            print(f"Error en los datos: {e}")
+        except Exception as e:
+            print(f"Error inesperado: {e}")
 
-    def solicitar_fecha(self):
-        while True:
-            try:
-                fecha = input("Fecha (dd/mm/yyyy HH:MM): ").strip()
-                return datetime.strptime(fecha, "%d/%m/%Y %H:%M")
-            except ValueError:
-                print("Formato inválido. Use dd/mm/yyyy HH:MM")
+        input("\nEnter para continuar")
 
     def agregar_especialidad_a_medico(self):
         print("\nAgregar especialidad a medico")
@@ -242,76 +244,97 @@ class CLI:
             print(f"Error inesperado: {e}")
 
         input("\nEnter para continuar")
-        
-    def ver_turnos_medico(self):
-        print("\nVer Turnos de Médico")
-        print("-" * 50)
-        try:
-            matricula = input("Matrícula del médico: ").strip()
-            fecha = input("Fecha (dd/mm/yyyy) o Enter para todos: ").strip()
-            
-            medico = next((m for m in self.clinica.medicos if m.matricula == matricula), None)
-            if not medico:
-                raise MedicoNoEncontradoException(matricula)
-            
-            if fecha:
-                fecha = datetime.strptime(fecha, "%d/%m/%Y")
-                turnos = self.clinica.buscar_turnos_medico(medico, fecha)
-            else:
-                turnos = self.clinica.buscar_turnos_medico(medico)
-            
-            if not turnos:
-                print("No hay turnos registrados")
-            else:
-                for turno in turnos:
-                    print(turno)
-                    
-        except MedicoNoEncontradoException as e:
-            print(f"Error: {e}")
-        
-        input("\nPresione Enter para continuar...")
 
     def ver_historia_clinica(self):
-        print("\nVer Historia Clínica")
+        print("\n Ver historia clinica")
         print("-" * 50)
+
         try:
-            dni = input("DNI del paciente: ").strip()
-            paciente = next((p for p in self.clinica.pacientes if p.dni == dni), None)
-            
-            if not paciente:
-                raise PacienteNoEncontradoException(dni)
-            
-            historia = self.clinica.obtener_historia_clinica(paciente)
-            print("\n", historia)
-            
-        except (PacienteNoEncontradoException, HistoriaClinicaNoEncontradaException) as e:
-            print(f"Error: {e}")
+            dni = input("DNI paciente: ").strip()
+
+            historia = self.clinica.obtener_historia_clinica(dni)
+
+            print("\n" + "-" * 50)
+            print(historia)
+            print("-" * 50)
+
+        except PacienteNoEncontradoException as e:
+            print(f"{e}")
+        except Exception as e:
+            print(f"Error inesperado: {e}")
         
-        input("\nPresione Enter para continuar...")
+        input("\nEnter para continuar")
+
+    def ver_todos_los_turnos(self):
+        print("\nTodos los turnos")
+        print("-" * 50)
+
+        try:
+            turnos = self.clinica.obtener_turnos()
+
+            if not turnos:
+                print("No hay turnos agendados")
+
+            else:
+                print(f"Total de turnos: {len(turnos)}")
+                print("-" * 80)
+
+            for i, turno in enumerate(turnos, 1):
+                print(f"{i}. {turno}")
+
+        except Exception as e:
+            print(f"Error inesperado: {e}")
+
+        input("\nEnter para continuar")
 
     def ver_todos_los_pacientes(self):
-        print("\nPacientes Registrados")
+        print("\nTodos los pacientes")
         print("-" * 50)
-        if not self.clinica.pacientes:
-            print("No hay pacientes registrados")
-        else:
-            for i, paciente in enumerate(self.clinica.pacientes, 1):
-                print(f"{i}. {paciente}")
-        
-        input("\nPresione Enter para continuar...")
 
+        try:
+            pacientes = self.clinica.obtener_pacientes()
+            
+            if not pacientes:
+                print("No hay pacientes registrados")
+            else:
+                print(f"Total de pacientes: {len(pacientes)}")
+                print("-" * 50)
+
+                for i, paciente in enumerate(pacientes, 1):
+                    print(f"{i}. {paciente}")
+
+        except Exception as e:
+            print(f"Error inesperado: {e}")
+
+        input("\nEnter para continuar")
+    
     def ver_todos_los_medicos(self):
-        print("\nMédicos Registrados")
+        print("\nTodos los medicos")
         print("-" * 50)
-        if not self.clinica.medicos:
-            print("No hay médicos registrados")
-        else:
-            for i, medico in enumerate(self.clinica.medicos, 1):
-                print(f"{i}. {medico}")
-        
-        input("\nPresione Enter para continuar...")
 
-if __name__ == "__main__":
-    cli = CLI()
-    cli.ejecutar()
+        try:
+            medicos = self.clinica.obtener_medicos()
+
+            if not medicos:
+                print("No hay medicos registrados")
+            else:
+                print(f"Total de medicos: {len(medicos)}")
+                print(f"-" * 50)
+
+                for i, medico in enumerate(medicos, 1):
+                    print(f"{i}. {medico}")
+     
+        except Exception as e:
+            print(f"Error inesperado: {e}")
+
+        input("\nEnter para continuar")
+
+    def parse_fecha_hora(self, fecha_str, hora_str):
+        try:
+            fecha_hora_str = f"{fecha_str} {hora_str}"
+            return datetime.strptime(fecha_hora_str, "%d/%m/%Y %H:%M")
+        except ValueError:
+            raise ValueError("Formato de fecha u hora invalido. (dd/mm/aaaa)")
+
+    
 

@@ -1,7 +1,7 @@
 from datetime import datetime
-from clase_paciente import Paciente
-from receta import Receta
-from médico import Medico
+from .clase_paciente import Paciente
+from .receta import Receta
+from .médico import Medico
 
 class HistoriaClinica:
     def __init__(self, paciente):
