@@ -1,12 +1,12 @@
-from modelos.historia_clinica import HistoriaClinica
-from modelos.excepciones import (
+from src.modelos.historia_clinica import HistoriaClinica
+from src.modelos.excepciones import (
     PacienteNoEncontradoException,
     MedicoNoDisponibleException,
     TurnoOcupadoException,
     RecetaInvalidaException,
 )
-from modelos.receta import Receta
-from modelos.turno import Turno
+from src.modelos.receta import Receta
+from src.modelos.turno import Turno
 
 class Clinica:
     def __init__(self):
