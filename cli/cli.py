@@ -11,6 +11,11 @@ from modelos.excepciones import (
     RecetaInvalidaException,
     HistoriaClinicaNoEncontradaException
 )
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from modelos.clinica import Clinica
 
 class CLI:
     def __init__(self):
@@ -242,7 +247,7 @@ class CLI:
             print(f"Error inesperado: {e}")
 
         input("\nEnter para continuar")
-        
+
     def ver_turnos_medico(self):
         print("\nVer Turnos de Médico")
         print("-" * 50)
