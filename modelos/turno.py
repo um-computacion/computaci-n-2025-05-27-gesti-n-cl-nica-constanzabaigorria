@@ -1,7 +1,7 @@
 from datetime import datetime
-from clase_paciente import Paciente
-from médico import Medico
-from especialidad import Especialidad
+from .clase_paciente import Paciente
+from .médico import Medico
+from .especialidad import Especialidad
 
 class Turno:
     def __init__(self, paciente: Paciente, medico: Medico, fecha: datetime, duracion: int = 30):
