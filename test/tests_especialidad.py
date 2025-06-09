@@ -8,7 +8,7 @@ project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(project_root)
 
 import unittest
-from modelos.especialidad import Especialidad
+from src.modelos.especialidad import Especialidad 
 
 class TestEspecialidad(unittest.TestCase):
     def test_creacion_exitosa(self):
