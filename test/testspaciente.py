@@ -1,5 +1,5 @@
 import unittest
-from src.models.paciente import Paciente
+from modelos.clase_paciente import Paciente
 
 class TestPaciente(unittest.TestCase):
 
