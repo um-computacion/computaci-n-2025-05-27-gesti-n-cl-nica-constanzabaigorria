@@ -1,38 +1,30 @@
-from .especialidad import Especialidad
-
 class Medico:
-    
-    def __init__(self, nombre, matricula):
-        if not nombre or not nombre.strip():
-            raise ValueError("El nombre del medico no debe estar vacio")
-        if not matricula or not matricula.strip():
-            raise ValueError("La matricula no debe estar vacia")
-        
-        self.__nombre = nombre.strip()
-        self.__matricula = matricula.strip()
-        self.__especialidades = []
+    def __init__(self, nombre: str, matricula: str):
+        if not nombre or not isinstance(nombre, str):
+            raise ValueError("El nombre no puede estar vacío.")
+        if not matricula or not isinstance(matricula, str):
+            raise ValueError("La matrícula no puede estar vacía.")
+        self.__nombre__ = nombre
+        self.__matricula__ = matricula
+        self.__especialidades__ = []
 
     def agregar_especialidad(self, especialidad):
-        if not isinstance(especialidad, Especialidad):
-            raise ValueError("Debe proporcionar una especialidad valida")
-        for esp_existente in self.__especialidades:
-            if esp_existente.obtener_especialidad() == especialidad.obtener_especialidad():
-                raise ValueError(f"La especialidad {especialidad.obtener_especialidad()} ya esta registrada para este medico.")
-        self.__especialidades.append(especialidad)
+        # No permitir duplicados por nombre de especialidad
+        for esp in self.__especialidades__:
+            if esp.obtener_especialidad().lower() == especialidad.obtener_especialidad().lower():
+                raise ValueError("Especialidad duplicada para este médico.")
+        self.__especialidades__.append(especialidad)
 
-    def obtener_especialidad_para_dia(self, dia):
-        for especialidad in self.__especialidades:
-            if especialidad.verificar_dia(dia):
-                return especialidad.obtener_especialidad()
-            
+    def obtener_matricula(self) -> str:
+        return self.__matricula__
+
+    def obtener_especialidad_para_dia(self, dia: str):
+        dia = dia.lower()
+        for esp in self.__especialidades__:
+            if esp.verificar_dia(dia):
+                return esp.obtener_especialidad()
         return None
-    
-    def obtener_matricula(self):
-        return self.__matricula
-    
+
     def __str__(self):
-        especialidades_str = ""
-        if self.__especialidades:
-            nombres_esp = [esp.obtener_especialidad() for esp in self.__especialidades]
-            especialidades_str = f" - Especialidades: {', '.join(nombres_esp)}"
-        return f"Dr. {self.__nombre}, Matricula: {self.__matricula}{especialidades_str}"
+        especialidades_str = ", ".join(str(esp) for esp in self.__especialidades__)
+        return f"Médico: {self.__nombre__} | Matrícula: {self.__matricula__} | Especialidades: {especialidades_str}"

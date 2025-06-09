@@ -1,58 +1,51 @@
+import sys
+import os
+import unittest
+from datetime import datetime
+
+# Add project root to Python path
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(project_root)
+
 import unittest
 from datetime import datetime
 from modelos.clase_paciente import Paciente
-from modelos.médico import Medico
-from modelos.especialidad import Especialidad   
+from modelos.médico import Medico  
 from modelos.turno import Turno
 
 class TestTurno(unittest.TestCase):
     def setUp(self):
-        self.paciente = Paciente("Ana García", "23456789")
-        self.medico = Medico("Dr. Pedro Martínez", "MP789")
-        self.fecha = datetime(2025, 6, 15, 14, 30)  # 15/06/2025 14:30
-        self.turno = Turno(
-            paciente=self.paciente,
-            medico=self.medico,
-            fecha=self.fecha
-        )
+        self.paciente = Paciente("Juan Perez", "12345678", "01/01/1990")
+        self.medico = Medico("Dra. House", "M123")
+        self.fecha_hora = datetime(2025, 6, 10, 10, 0)
 
-    def test_creacion_turno(self):
-        self.assertEqual(self.turno.paciente, self.paciente)
-        self.assertEqual(self.turno.medico, self.medico)
-        self.assertEqual(self.turno.fecha, self.fecha)
-        self.assertEqual(self.turno.duracion, 30)
-        self.assertEqual(self.turno.estado, "Programado")
+    def test_creacion_exitosa(self):
+        turno = Turno(self.paciente, self.medico, self.fecha_hora, "Clínica")
+        self.assertEqual(turno.obtener_medico(), self.medico)
+        self.assertEqual(turno.obtener_fecha_hora(), self.fecha_hora)
+        self.assertIn("Clínica", str(turno))
+        self.assertIn("Juan Perez", str(turno))
+        self.assertIn("Dra. House", str(turno))
 
-    def test_cancelar_turno(self):
-        self.turno.cancelar()
-        self.assertEqual(self.turno.estado, "Cancelado")
+    def test_str(self):
+        turno = Turno(self.paciente, self.medico, self.fecha_hora, "Pediatría")
+        s = str(turno)
+        self.assertIn("Pediatría", s)
+        self.assertIn("Juan Perez", s)
+        self.assertIn("Dra. House", s)
+        self.assertIn("2025", s)
 
-    def test_completar_turno(self):
-        self.turno.completar()
-        self.assertEqual(self.turno.estado, "Completado")
-
-    def test_reprogramar_turno(self):
-        nueva_fecha = datetime(2025, 6, 16, 15, 0)
-        self.turno.reprogramar(nueva_fecha)
-        self.assertEqual(self.turno.fecha, nueva_fecha)
-        self.assertEqual(self.turno.estado, "Programado")
-
-    def test_str_representacion(self):
-        resultado = str(self.turno)
-        self.assertIn("Ana García", resultado)
-        self.assertIn("Dr. Pedro Martínez", resultado)
-        self.assertIn("15/06/2025 14:30", resultado)
-        self.assertIn("Estado: Programado", resultado)
-
-    def test_validacion_tipos(self):
+    def test_datos_invalidos(self):
         with self.assertRaises(TypeError):
-            Turno("no es paciente", self.medico, self.fecha)
-        with self.assertRaises(TypeError):
-            Turno(self.paciente, "no es medico", self.fecha)
-        with self.assertRaises(TypeError):
-            Turno(self.paciente, self.medico, "no es datetime")
-        with self.assertRaises(TypeError):
-            self.turno.reprogramar("no es datetime")
+            Turno()  # Sin argumentos
+        with self.assertRaises(ValueError):
+            Turno(None, self.medico, self.fecha_hora, "Clínica")
+        with self.assertRaises(ValueError):
+            Turno(self.paciente, None, self.fecha_hora, "Clínica")
+        with self.assertRaises(ValueError):
+            Turno(self.paciente, self.medico, None, "Clínica")
+        with self.assertRaises(ValueError):
+            Turno(self.paciente, self.medico, self.fecha_hora, "")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

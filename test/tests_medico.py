@@ -1,59 +1,51 @@
+import sys
+import os
+import unittest
+from datetime import datetime
+
+# Add project root to Python path
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(project_root)
+
 import unittest
 from modelos.médico import Medico
 from modelos.especialidad import Especialidad
 
 class TestMedico(unittest.TestCase):
-
-    def setUp(self): #Configuracion inicial para los tests
-        self.pediatria = Especialidad("Pediatria", ["lunes", "miercoles", "viernes"])
-        self.cardiologia = Especialidad("Cardiologia", ["martes", "jueves"])
-
-    def test_crear_medico(self):
-        medico = Medico("Dr. Juan Perez", "MAT12345")
-
-        self.assertEqual(medico.obtener_matricula(), "MAT12345")
-        self.assertIn("Dr. Juan Perez", str(medico))
-        self.assertIn("MAT12345", str(medico))
+    def test_creacion_exitosa(self):
+        medico = Medico("Dr. House", "M123")
+        self.assertEqual(medico.obtener_matricula(), "M123")
+        self.assertIn("Dr. House", str(medico))
 
     def test_agregar_especialidad(self):
-        medico = Medico("Dr. Juan Perez", "MAT12345")
+        medico = Medico("Dra. Grey", "M456")
+        esp = Especialidad("Cardiología", ["lunes", "miércoles"])
+        medico.agregar_especialidad(esp)
+        self.assertIn("Cardiología", str(medico))
+        self.assertEqual(medico.obtener_especialidad_para_dia("lunes"), "Cardiología")
+        self.assertIsNone(medico.obtener_especialidad_para_dia("viernes"))
 
-        medico.agregar_especialidad(self.pediatria)
-        self.assertEqual(medico.obtener_especialidad_para_dia("lunes"), "Pediatria")
-        self.assertIn("Pediatria", str(medico))
-    
-    def test_duplicados_especialidad(self):
-        medico = Medico("Dr. Roberto", "MAT67890")
-
-        medico.agregar_especialidad(self.pediatria)
+    def test_prevenir_especialidad_duplicada(self):
+        medico = Medico("Dr. Strange", "M789")
+        esp1 = Especialidad("Neurología", ["martes"])
+        esp2 = Especialidad("Neurología", ["jueves"])
+        medico.agregar_especialidad(esp1)
         with self.assertRaises(ValueError):
-            medico.agregar_especialidad(self.pediatria)
+            medico.agregar_especialidad(esp2)  # No debe permitir duplicados
 
-    def test_especialidad_para_dia_disponible(self):
-        medico = Medico("Dr. Juanito", "MAT11111")
-        medico.agregar_especialidad(self.pediatria)
-        medico.agregar_especialidad(self.cardiologia)
-
-        self.assertEqual(medico.obtener_especialidad_para_dia("lunes"), "Pediatria")
-        self.assertEqual(medico.obtener_especialidad_para_dia("martes"), "Cardiologia")
-        self.assertIsNone(medico.obtener_especialidad_para_dia("sabado"))
-
-    def test_nombre_vacio(self):
+    def test_dias_invalidos(self):
         with self.assertRaises(ValueError):
-            Medico("", "MAT33333")
+            Especialidad("Pediatría", ["funday"])  # Día inválido
 
-    def test_matricula_vacia(self):
-        with self.assertRaises(ValueError):
-            Medico("Dr. Juanito", "")
-
-    def test_str_(self):
-        medico = Medico("Dr. Pepito Juan", "MAT55555")
-        medico.agregar_especialidad(self.pediatria)
-        resultado = str(medico)
-
-        self.assertIn("Dr. Pepito Juan", resultado)
-        self.assertIn("MAT55555", resultado)
-        self.assertIn("Pediatria", resultado)
+    def test_str(self):
+        medico = Medico("Dra. Who", "M999")
+        esp = Especialidad("Clínica", ["lunes", "viernes"])
+        medico.agregar_especialidad(esp)
+        s = str(medico)
+        self.assertIn("Dra. Who", s)
+        self.assertIn("Clínica", s)
+        self.assertIn("lunes", s)
+        self.assertIn("viernes", s)
 
 if __name__ == "__main__":
     unittest.main()

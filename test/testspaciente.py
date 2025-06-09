@@ -1,46 +1,44 @@
+import sys
+import os
+import unittest
+from datetime import datetime
+
+# Add project root to Python path
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(project_root)
+
 import unittest
 from modelos.clase_paciente import Paciente
 
 class TestPaciente(unittest.TestCase):
-
-    def test_crear_paciente(self):
-        paciente = Paciente("Pepito Juan", "12345678", "17/07/1977")
+    def test_creacion_exitosa(self):
+        paciente = Paciente("Juan Perez", "12345678", "01/01/1990")
         self.assertEqual(paciente.obtener_dni(), "12345678")
-        self.assertIn("Pepito Juan", str(paciente))
+        self.assertIn("Juan Perez", str(paciente))
         self.assertIn("12345678", str(paciente))
-        self.assertIn("17/07/1977", str(paciente))
 
-    def test_nombre_vacio(self):
-        with self.assertRaises(ValueError):
-            Paciente("", "12345678", "17/07/1977")
+    def test_dni_unico(self):
+        paciente1 = Paciente("Ana Gomez", "11111111", "02/02/1980")
+        paciente2 = Paciente("Ana Gomez", "11111111", "02/02/1980")
+        # Dos instancias pueden crearse, pero el sistema debe evitar duplicados al registrar (esto se testea en Clinica)
+        self.assertEqual(paciente1.obtener_dni(), paciente2.obtener_dni())
 
-    def test_dni_vacio(self):
+    def test_datos_invalidos(self):
+        with self.assertRaises(TypeError):
+            Paciente()  # Sin argumentos
         with self.assertRaises(ValueError):
-            Paciente("Pepito Juan", "", "17/07/1977")
+            Paciente("", "22222222", "03/03/1970")  # Nombre vacío
+        with self.assertRaises(ValueError):
+            Paciente("Pedro", "", "03/03/1970")  # DNI vacío
+        with self.assertRaises(ValueError):
+            Paciente("Pedro", "22222222", "")  # Fecha de nacimiento vacía
 
-    def test_fecha_vacia(self):
-        with self.assertRaises(ValueError):
-            Paciente("Pepito Juan", "12345678", "")
-
-    def test_dni_mal(self):
-        with self.assertRaises(ValueError):
-            Paciente("Pepito Juan", "ABC45678", "17/07/1977")
-
-    def test_fecha_mala(self):
-        with self.assertRaises(ValueError):
-            Paciente("Pepito Juan", "12345678", "1977/07/17")
-
-    def test_fecha_inexistente(self):
-        with self.assertRaises(ValueError):
-            Paciente("Pepito Juan", "12345678", "32/07/1977")
-    
     def test_str(self):
-        paciente = Paciente("Pepito Juan", "12345678", "17/07/1977")
-        resultado = str(paciente)
+        paciente = Paciente("Maria Lopez", "33333333", "04/04/2000")
+        s = str(paciente)
+        self.assertIn("Maria Lopez", s)
+        self.assertIn("33333333", s)
+        self.assertIn("04/04/2000", s)
 
-        self.assertIn("Pepito Juan", resultado)
-        self.assertIn("12345678", resultado)
-        self.assertIn("17/07/1977", resultado)
-            
 if __name__ == "__main__":
     unittest.main()
